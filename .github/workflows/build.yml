@@ -1,0 +1,70 @@
+name: Build and Test OpenFHE Go
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/matiasinsaurralde/openfhe-buildbox:latest
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24.3'
+
+    - name: Verify OpenFHE installation
+      run: |
+        echo "Checking OpenFHE installation..."
+        ls -la /usr/local/include/openfhe* || echo "OpenFHE headers not found in /usr/local/include"
+        ls -la /usr/local/lib/libOPENFHE* || echo "OpenFHE libraries not found in /usr/local/lib"
+        echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+        echo "C_INCLUDE_PATH=${C_INCLUDE_PATH}"
+        echo "CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}"
+        echo "LIBRARY_PATH=${LIBRARY_PATH}"
+        
+    - name: Set environment variables
+      run: |
+        echo "CGO_ENABLED=1" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "C_INCLUDE_PATH=/usr/local/include:${C_INCLUDE_PATH}" >> $GITHUB_ENV
+        echo "CPLUS_INCLUDE_PATH=/usr/local/include:${CPLUS_INCLUDE_PATH}" >> $GITHUB_ENV
+        echo "LIBRARY_PATH=/usr/local/lib:${LIBRARY_PATH}" >> $GITHUB_ENV
+        
+    - name: Install golangci-lint
+      run: |
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.59.1
+        echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        
+    - name: Get dependencies
+      run: go mod download
+      
+    - name: Build project
+      run: |
+        echo "Building with openfhe tags..."
+        go build -tags="openfhe" -v ./...
+        
+    - name: Run tests
+      run: |
+        echo "Running tests with openfhe tags..."
+        go test -tags="openfhe" -v ./...
+        
+    - name: Run golangci-lint
+      run: |
+        echo "Running golangci-lint..."
+        golangci-lint run --timeout=10m
+        
+    - name: Check build artifacts
+      run: |
+        echo "Checking what was built..."
+        ls -la
+        go build -tags="openfhe" -o openfhe-test ./...
+        ls -la openfhe-test || echo "No binary created"
