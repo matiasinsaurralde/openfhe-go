@@ -5,7 +5,8 @@ package openfhe
 /*
 #cgo CFLAGS:   -I/usr/local/include -I/usr/local/include/openfhe/core -I/usr/local/include/openfhe/pke -I/usr/local/include/openfhe/ -I/usr/local/include/openfhe/binfhe
 #cgo CXXFLAGS: -I/usr/local/include -I/usr/local/include/openfhe/core -I/usr/local/include/openfhe/pke -I/usr/local/include/openfhe/ -I/usr/local/include/openfhe/binfhe -std=c++17
-#cgo LDFLAGS:  -lOPENFHEcore -lOPENFHEpke -lstdc++ -lm -lpthread
+#cgo darwin LDFLAGS:  -L/usr/local/lib -Wl,-rpath,/usr/local/lib -lOPENFHEcore -lOPENFHEpke -lstdc++ -lm -lpthread
+#cgo linux LDFLAGS:  -lOPENFHEcore -lOPENFHEpke -lstdc++ -lm -lpthread
 #include "openfhe_c.h"          // header only – no .cpp here
 */
 import "C"
