@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/amd64]
+    
+    container:
+      image: ghcr.io/matiasinsaurralde/openfhe-buildbox:1.3.1
+      options: --user root
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24.3'
+    
+    - name: Download dependencies
+      run: go mod download
+    
+    - name: Build
+      run: go build -tags openfhe -o openfhe-go .
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/amd64]
+    
+    container:
+      image: ghcr.io/matiasinsaurralde/openfhe-buildbox:1.3.1
+      options: --user root
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24.3'
+    
+    - name: Download dependencies
+      run: go mod download
+    
+    - name: Run tests
+      run: go test -v -tags openfhe 
