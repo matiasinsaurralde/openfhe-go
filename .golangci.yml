@@ -1,0 +1,44 @@
+version: "2"
+run:
+  go: "1.24"
+  build-tags:
+    - openfhe
+  linters:
+    enable:
+      - goconst
+      - gocyclo
+      - gosec
+      - misspell
+      - revive
+      settings:
+      goconst:
+        min-len: 2
+        min-occurrences: 3
+      gocyclo:
+        min-complexity: 15
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+          rules:
+        - linters:
+            - goconst
+            - gocyclo
+          path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
